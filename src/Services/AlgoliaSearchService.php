@@ -8,7 +8,9 @@ use Algolia\SearchBundle\Entity\Aggregator;
 use Algolia\SearchBundle\Responses\SearchServiceResponse;
 use Algolia\SearchBundle\SearchableEntity;
 use Algolia\SearchBundle\SearchService;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Util\ClassUtils;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -228,11 +230,29 @@ final class AlgoliaSearchService implements SearchService
             }
 
             $repo   = $objectManager->getRepository($entityClass);
-            $entity = $repo->findOneBy(['id' => $id]);
+            $meta = $objectManager->getClassMetadata($entityClass);
+            $idField = $meta->getIdentifier()[0];
+
+            $entity = $repo->findOneBy([$idField => $id]);
 
             if ($entity !== null) {
                 $results[] = $entity;
             }
+        }
+
+        return $results;
+    }
+
+    public function searchCollection($query, $className, EntityManagerInterface $objectManager, array $parameters = [])
+    {
+        $this->assertIsSearchable($className);
+        $ids = $this->engine->searchIds($query, $this->getFullIndexName($className), 1, 1000, $parameters);
+        $results = new ArrayCollection();
+
+        foreach ($ids as $objectID) {
+            $entityRef = $objectManager->getReference($className, $objectID);
+
+            $results->add($entityRef);
         }
 
         return $results;
