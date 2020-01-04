@@ -243,10 +243,14 @@ final class AlgoliaSearchService implements SearchService
         return $results;
     }
 
-    public function searchCollection($query, $className, EntityManagerInterface $objectManager, array $parameters = [])
+    public function searchCollection($query, $className, EntityManagerInterface $objectManager, array $requestOptions = [])
     {
         $this->assertIsSearchable($className);
-        $ids = $this->engine->searchIds($query, $this->getFullIndexName($className), 1, 1000, $parameters);
+
+        $requestOptions['page'] = 1;
+        $requestOptions['hitsPerPage'] = 1000;
+
+        $ids = $this->engine->searchIds($query, $this->searchableAs($className), $requestOptions);
         $results = new ArrayCollection();
 
         foreach ($ids as $objectID) {
