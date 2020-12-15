@@ -31,7 +31,7 @@
         }
     },
     "require-dev": {
-        "doctrine/doctrine-bundle": "^1.8 || ^2.0",
+        "doctrine/doctrine-bundle": "^1.8 || ^2.0 || ^3.0",
         "doctrine/orm": "^2.5",
         "jms/serializer-bundle": "^2.3 || ^3.0",
         "ocramius/proxy-manager": "*",
